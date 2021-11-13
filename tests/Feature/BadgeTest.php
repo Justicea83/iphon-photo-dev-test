@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Events\AchievementUnlocked;
-use App\Events\BadgeUnlocked;
 use App\Models\Comment;
 use App\Models\Lesson;
 use App\Models\User;
@@ -12,10 +10,7 @@ use App\Utils\Achievement\CommentAchievementUtils;
 use App\Utils\Achievement\LessonAchievementUtils;
 use App\Utils\Badge\BadgeUtils;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
-use Ramsey\Collection\Collection;
 use Tests\CreatesApplication;
 use Tests\TestCase;
 

@@ -26,7 +26,7 @@ class AchievementsTableSeeder extends Seeder
         if (CommentAchievement::query()->count() > 0) return;
         foreach (CommentAchievementUtils::ALL_MILESTONES as $milestone) {
             CommentAchievement::query()->firstOrCreate([
-                'milestone' => $milestone
+                'milestone' => $milestone,
             ]);
         }
     }

@@ -11,7 +11,6 @@ use App\Models\CommentAchievement;
 use App\Models\Lesson;
 use App\Models\LessonAchievement;
 use App\Models\User;
-use App\Models\UserBadge;
 use App\Utils\Achievement\AchievementUtils;
 use App\Utils\Achievement\CommentAchievementUtils;
 use App\Utils\Achievement\LessonAchievementUtils;
@@ -25,10 +24,16 @@ use InvalidArgumentException;
 class AchievementRepository implements AchievementRepositoryInterface
 {
     private Badge $badgeModel;
+    private Achievement $achievementModel;
+    private LessonAchievement $lessonAchievementModel;
+    private CommentAchievement $commentAchievementModel;
 
-    public function __construct(Badge $badgeModel)
+    public function __construct(Badge $badgeModel, Achievement $achievementModel, LessonAchievement $lessonAchievementModel, CommentAchievement $commentAchievementModel)
     {
         $this->badgeModel = $badgeModel;
+        $this->achievementModel = $achievementModel;
+        $this->commentAchievementModel = $commentAchievementModel;
+        $this->lessonAchievementModel = $lessonAchievementModel;
     }
 
     public function commentWritten(Comment $comment)
@@ -100,7 +105,7 @@ class AchievementRepository implements AchievementRepositoryInterface
     {
         ['milestone' => $milestone] = AchievementUtils::getMilestoneFromName($badgeName);
 
-        Log::info(get_class(),['milestone' => $this->transformBadgeMilestone($milestone)]);
+        Log::info(get_class(), ['milestone' => $this->transformBadgeMilestone($milestone)]);
 
         /** @var Badge $badge */
         $badge = $this->badgeModel->query()->where('achievement_count', $this->transformBadgeMilestone($milestone))->first();
@@ -109,7 +114,7 @@ class AchievementRepository implements AchievementRepositoryInterface
 
         try {
             $user->badges()->attach($badge->id);
-        }catch (QueryException $e){
+        } catch (QueryException $e) {
 
         }
     }
@@ -122,4 +127,78 @@ class AchievementRepository implements AchievementRepositoryInterface
         return $milestone;
     }
 
+    public function getUserAchievements(User $user): array
+    {
+        $userAchievements = $user->achievements;
+
+        $currentBadge = $this->getCurrentBadge($user);
+        /** @var Badge $nextBadge */
+
+        $nextBadge = $this->getNextBadge($user, $currentBadge);
+
+        return [
+            'unlocked_achievements' => $this->achievementModel->query()
+                ->whereNotIn('achievements.id', $userAchievements->pluck('id'))
+                ->get()
+                ->pluck('description')
+                ->toArray(),
+            'next_available_achievements' => $this->getNextAvailableAchievements($user),
+            'current_badge' => $currentBadge,
+            'next_badge' => $nextBadge != null ? $nextBadge->name : '',
+            'remaining_to_unlock_next_badge' => $this->remainingToUnlockNextBadge($user, $nextBadge)
+        ];
+    }
+
+    private function getNextAvailableAchievements(User $user): array
+    {
+        $payload = [];
+        $userCommentAchievements = $user->commentAchievements;
+        $userLessonAchievements = $user->lessonAchievements;
+
+        /** @var LessonAchievement $nextLessonAchievement */
+        $nextLessonAchievement = $this->lessonAchievementModel->query()
+            ->whereNotIn('id', $userLessonAchievements->pluck('id'))
+            ->orderBy('milestone')
+            ->first();
+        if ($nextLessonAchievement != null) array_push($payload, $nextLessonAchievement->description);
+
+        /** @var CommentAchievement $nextCommentAchievement */
+        $nextCommentAchievement = $this->commentAchievementModel->query()
+            ->whereNotIn('id', $userCommentAchievements->pluck('id'))
+            ->orderBy('milestone')
+            ->first();
+
+        if ($nextCommentAchievement != null) array_push($payload, $nextCommentAchievement->description);
+        return $payload;
+    }
+
+    private function getCurrentBadge(User $user): string
+    {
+        if ($user->badges()->count() == 0) {
+            return BadgeUtils::BADGE_BEGINNER;
+        }
+        return $user->badges()->orderBy('achievement_count', 'desc')->first()->name;
+    }
+
+    private function getBadgeByName(string $name): Model
+    {
+        return $this->badgeModel->query()->where('name', $name)->first();
+    }
+
+    private function getNextBadge(User $user, string $currentBadgeName = null): Model
+    {
+        /** @var Badge $currentBadge */
+        $currentBadge = $this->getBadgeByName($currentBadgeName ?? $this->getCurrentBadge($user));
+        if ($currentBadge == null) throw new InvalidArgumentException("badge not found");
+        return $this->badgeModel->query()->where('achievement_count', '>', $currentBadge->achievement_count)
+            ->orderBy('achievement_count')
+            ->first();
+    }
+
+    private function remainingToUnlockNextBadge(User $user, ?Badge $nextBadge): int
+    {
+        if ($nextBadge == null)
+            return 0;
+        return $nextBadge->achievement_count - $user->achievements()->count();
+    }
 }

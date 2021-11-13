@@ -12,4 +12,5 @@ interface AchievementRepositoryInterface
     public function lessonWatched(Lesson $lesson, User $user);
     public function achievementUnlocked(string $achievementName,User $user);
     public function badgeUnlocked(string $badgeName,User $user);
+    public function getUserAchievements(User $user) : array;
 }

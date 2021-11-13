@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Parental\HasParent;
 
+/**
+ * @property mixed milestone
+ * @property mixed description
+ */
 class CommentAchievement extends Achievement
 {
     use HasFactory,HasParent;
@@ -13,4 +17,6 @@ class CommentAchievement extends Achievement
     protected $fillable = [
         'milestone'
     ];
+
+
 }

@@ -16,7 +16,7 @@ use Tests\TestCase;
 
 class AchievementUnlockedTest extends TestCase
 {
-    use CreatesApplication,RefreshDatabase;
+    use CreatesApplication, RefreshDatabase;
 
     public function setUp(): void
     {
@@ -25,7 +25,8 @@ class AchievementUnlockedTest extends TestCase
         Artisan::call('db:seed', ['-vvv' => true]);
     }
 
-    public function test_user_get_achievement_after_first_comment(){
+    public function test_user_get_achievement_after_first_comment()
+    {
 
         /** @var Comment $comment */
         $comment = Comment::factory()->create();
@@ -35,12 +36,13 @@ class AchievementUnlockedTest extends TestCase
 
         $repository->commentWritten($comment);
 
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($comment->user->comments()->count()),$comment->user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($comment->user->comments()->count()), $comment->user);
 
-        $this->assertEquals(1,$comment->user->achievements()->count());
+        $this->assertEquals(1, $comment->user->achievements()->count());
     }
 
-    public function test_user_get_achievement_after_fifth_comment(){
+    public function test_user_get_achievement_after_fifth_comment()
+    {
 
         $user = User::factory()->create();
         Comment::factory(4)->for($user)->create();
@@ -53,12 +55,13 @@ class AchievementUnlockedTest extends TestCase
 
         $repository->commentWritten($comment);
 
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($comment->user->comments()->count()),$comment->user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($comment->user->comments()->count()), $comment->user);
 
-        $this->assertEquals(1,$comment->user->achievements()->count());
+        $this->assertEquals(1, $comment->user->achievements()->count());
     }
 
-    public function test_user_already_has_one_achievement(){
+    public function test_user_already_has_one_achievement()
+    {
         /** @var User $user */
         $user = User::factory()->create();
 
@@ -71,21 +74,21 @@ class AchievementUnlockedTest extends TestCase
         $repository->commentWritten($comment);
 
         //this ensures the first achievement
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()), $user);
 
         //the user then creates a second comment
         /** @var Comment $secondComment */
         $secondComment = Comment::factory()->for($comment->user)->create();
         $repository->commentWritten($secondComment);
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()), $user);
 
 
         /** @var Comment $thirdComment */
         $thirdComment = Comment::factory()->for($user)->create();
         $repository->commentWritten($thirdComment);
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()), $user);
 
-        $this->assertEquals(2,$comment->user->achievements()->count());
+        $this->assertEquals(2, $comment->user->achievements()->count());
 
     }
 
@@ -94,7 +97,7 @@ class AchievementUnlockedTest extends TestCase
      */
     public function test_expect_event_after_any_achievement()
     {
-        $this->expectsEvents([AchievementUnlocked::class,BadgeUnlocked::class]);
+        $this->expectsEvents([AchievementUnlocked::class, BadgeUnlocked::class]);
 
         /** @var User $user */
         $user = User::factory()->create();
@@ -107,7 +110,39 @@ class AchievementUnlockedTest extends TestCase
 
         $repository->commentWritten($comment);
 
-        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()), $user);
+    }
 
+    public function test_unlocked_achievements()
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        $response = $this->get("/users/$user->id/achievements");
+
+        $response->assertStatus(200);
+        $response->assertJson(
+            [
+                "current_badge" => "beginner",
+                'next_available_achievements' => [
+                    "First Lesson Watched",
+                    "First Comment Written",
+                ],
+                "next_badge" => "intermediate",
+                "remaining_to_unlock_next_badge" => 4,
+                "unlocked_achievements" => [
+                    "First Comment Written",
+                    "3 Comments Written",
+                    "5 Comments Written",
+                    "10 Comments Written",
+                    "20 Comments Written",
+                    "First Lesson Watched",
+                    "5 Lessons Watched",
+                    "10 Lessons Watched",
+                    "25 Lessons Watched",
+                    "50 Lessons Watched"
+                ]
+            ]
+        );
     }
 }
