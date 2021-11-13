@@ -10,7 +10,7 @@ class CommentWritten
 {
     use Dispatchable, SerializesModels;
 
-    public $comment;
+    public Comment $comment;
 
     /**
      * Create a new event instance.
@@ -21,4 +21,14 @@ class CommentWritten
     {
         $this->comment = $comment;
     }
+
+
+    /*public function test_example()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->get("/users/{$user->id}/achievements");
+
+        $response->assertStatus(200);
+    }*/
 }

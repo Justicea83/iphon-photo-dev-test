@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class UserAchievement extends Model
 {
     use HasFactory;
+
+
 }

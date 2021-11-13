@@ -9,4 +9,8 @@ use Parental\HasParent;
 class CommentAchievement extends Achievement
 {
     use HasFactory,HasParent;
+
+    protected $fillable = [
+        'milestone'
+    ];
 }
