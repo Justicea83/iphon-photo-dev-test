@@ -4,6 +4,9 @@ namespace App\Utils\Badge;
 
 class BadgeUtils
 {
+
+    public const MILESTONE = 'badge';
+
     public const BADGE_BEGINNER = "beginner";
     public const BADGE_BEGINNER_ACHIEVEMENT_COUNT = 0;
 
@@ -34,4 +37,10 @@ class BadgeUtils
             'achievement_count' => self::BADGE_MASTER_ACHIEVEMENT_COUNT
         ],
     ];
+
+    public static function getMilestoneName(int $milestone): string
+    {
+        $name = self::MILESTONE;
+        return "${name}_$milestone";
+    }
 }

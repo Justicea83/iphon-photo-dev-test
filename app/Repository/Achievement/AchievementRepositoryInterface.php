@@ -10,5 +10,6 @@ interface AchievementRepositoryInterface
 {
     public function commentWritten(Comment $comment);
     public function lessonWatched(Lesson $lesson, User $user);
-    public function achievementUnlocked(string $achievement,User $user);
+    public function achievementUnlocked(string $achievementName,User $user);
+    public function badgeUnlocked(string $badgeName,User $user);
 }

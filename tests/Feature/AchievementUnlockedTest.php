@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use App\Events\AchievementUnlocked;
+use App\Events\BadgeUnlocked;
 use App\Models\Comment;
 use App\Models\User;
 use App\Repository\Achievement\AchievementRepositoryInterface;
 use App\Utils\Achievement\CommentAchievementUtils;
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
 use Tests\CreatesApplication;
 use Tests\TestCase;
@@ -85,6 +86,28 @@ class AchievementUnlockedTest extends TestCase
         $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
 
         $this->assertEquals(2,$comment->user->achievements()->count());
+
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function test_expect_event_after_any_achievement()
+    {
+        $this->expectsEvents([AchievementUnlocked::class,BadgeUnlocked::class]);
+
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        /** @var Comment $comment */
+        $comment = Comment::factory()->for($user)->create();
+
+        /** @var AchievementRepositoryInterface $repository */
+        $repository = $this->app->make(AchievementRepositoryInterface::class);
+
+        $repository->commentWritten($comment);
+
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
 
     }
 }

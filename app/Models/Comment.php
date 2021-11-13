@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User user
+ * @property mixed id
  */
 class Comment extends Model
 {
