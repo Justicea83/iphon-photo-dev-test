@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Badge;
-use App\Utils\BadgeUtils;
+use App\Utils\Badge\BadgeUtils;
 use Illuminate\Database\Seeder;
 
 class BadgesTableSeeder extends Seeder

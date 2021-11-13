@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Parental\HasChildren;
+use Parental\HasParent;
 
-class Achievement extends Model
+class CommentAchievement extends Achievement
 {
-    use HasFactory,HasChildren;
+    use HasFactory,HasParent;
 }
