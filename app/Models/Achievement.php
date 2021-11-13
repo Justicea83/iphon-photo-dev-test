@@ -13,7 +13,4 @@ class Achievement extends Model
 {
     use HasFactory,HasChildren;
 
-    protected $fillable = [
-        ''
-    ];
 }

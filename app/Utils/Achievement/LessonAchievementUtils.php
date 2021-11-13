@@ -4,6 +4,8 @@ namespace App\Utils\Achievement;
 
 class LessonAchievementUtils
 {
+    public const MILESTONE = 'lesson';
+
     public const FIRST_MILESTONE = 1;
     public const FIFTH_MILESTONE = 5;
     public const TENTH_MILESTONE = 10;
@@ -17,4 +19,10 @@ class LessonAchievementUtils
         self::TWENTY_FIFTH_MILESTONE,
         self::FIFTIETH_MILESTONE,
     ];
+
+    public static function getMilestoneName(int $milestone): string
+    {
+        $name = self::MILESTONE;
+        return "${name}_$milestone";
+    }
 }

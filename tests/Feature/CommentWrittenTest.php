@@ -8,13 +8,14 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Repository\Achievement\AchievementRepositoryInterface;
 use Exception;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\CreatesApplication;
 use Tests\TestCase;
 
 class CommentWrittenTest extends TestCase
 {
-    use CreatesApplication;
+    use CreatesApplication,RefreshDatabase;
 
     public function setUp(): void
     {
@@ -27,8 +28,8 @@ class CommentWrittenTest extends TestCase
     {
         //test if any other object throws an exception
         $this->expectError();
-        $comment = User::factory()->create();
-        CommentWritten::dispatch($comment);
+        $user = User::factory()->create();
+        CommentWritten::dispatch($user);
     }
 
     public function test_comment_written_event_listener_runs()
@@ -39,7 +40,12 @@ class CommentWrittenTest extends TestCase
         /** @var AchievementRepositoryInterface $repository */
         $repository = $this->app->make(AchievementRepositoryInterface::class);
 
-        $this->assertNull($repository->commentWritten($comment));
+        try {
+            $repository->commentWritten($comment);
+        }catch (Exception $e){
+            $this->fail($e->getMessage());
+        }
+        $this->assertTrue(true);
     }
 
     /**

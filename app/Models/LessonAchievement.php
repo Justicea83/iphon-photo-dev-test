@@ -9,4 +9,8 @@ use Parental\HasParent;
 class LessonAchievement extends Achievement
 {
     use HasFactory,HasParent;
+
+    protected $fillable = [
+        'milestone'
+    ];
 }

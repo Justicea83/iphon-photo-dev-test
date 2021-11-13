@@ -6,10 +6,12 @@ use App\Events\AchievementUnlocked;
 use App\Models\Achievement;
 use App\Models\Comment;
 use App\Models\CommentAchievement;
+use App\Models\Lesson;
 use App\Models\LessonAchievement;
 use App\Models\User;
 use App\Utils\Achievement\AchievementUtils;
 use App\Utils\Achievement\CommentAchievementUtils;
+use App\Utils\Achievement\LessonAchievementUtils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +23,6 @@ class AchievementRepository implements AchievementRepositoryInterface
     {
         $commentCount = $comment->user->comments()->count();
         Log::info(get_class(),['comment_count' => $commentCount]);
-        //TODO check if the comment is the first
         switch ($commentCount) {
             case CommentAchievementUtils::THIRD_MILESTONE:
             case CommentAchievementUtils::FIFTH_MILESTONE:
@@ -29,6 +30,21 @@ class AchievementRepository implements AchievementRepositoryInterface
             case CommentAchievementUtils::TWENTIETH_MILESTONE:
             case CommentAchievementUtils::FIRST_MILESTONE:
                 AchievementUnlocked::dispatch(CommentAchievementUtils::getMilestoneName($commentCount),$comment->user);
+                break;
+        }
+    }
+
+    public function lessonWatched(Lesson $lesson, User $user)
+    {
+        $lessonsCount = $user->lessons()->where('watched',true)->count();
+        Log::info(get_class(),['lesson_count' => $lessonsCount]);
+        switch ($lessonsCount) {
+            case LessonAchievementUtils::FIRST_MILESTONE:
+            case LessonAchievementUtils::FIFTH_MILESTONE:
+            case LessonAchievementUtils::TENTH_MILESTONE:
+            case LessonAchievementUtils::TWENTY_FIFTH_MILESTONE:
+            case LessonAchievementUtils::FIFTIETH_MILESTONE:
+                AchievementUnlocked::dispatch(LessonAchievementUtils::getMilestoneName($lessonsCount),$user);
                 break;
         }
     }
@@ -61,4 +77,6 @@ class AchievementRepository implements AchievementRepositoryInterface
         }
         throw new InvalidArgumentException("$type is not allowed");
     }
+
+
 }

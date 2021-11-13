@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 class AchievementUnlockedTest extends TestCase
 {
-    use CreatesApplication;
+    use CreatesApplication,RefreshDatabase;
 
     public function setUp(): void
     {
@@ -55,5 +55,36 @@ class AchievementUnlockedTest extends TestCase
         $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($comment->user->comments()->count()),$comment->user);
 
         $this->assertEquals(1,$comment->user->achievements()->count());
+    }
+
+    public function test_user_already_has_one_achievement(){
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        /** @var Comment $comment */
+        $comment = Comment::factory()->for($user)->create();
+
+        /** @var AchievementRepositoryInterface $repository */
+        $repository = $this->app->make(AchievementRepositoryInterface::class);
+
+        $repository->commentWritten($comment);
+
+        //this ensures the first achievement
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+
+        //the user then creates a second comment
+        /** @var Comment $secondComment */
+        $secondComment = Comment::factory()->for($comment->user)->create();
+        $repository->commentWritten($secondComment);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+
+
+        /** @var Comment $thirdComment */
+        $thirdComment = Comment::factory()->for($user)->create();
+        $repository->commentWritten($thirdComment);
+        $repository->achievementUnlocked(CommentAchievementUtils::getMilestoneName($user->comments()->count()),$user);
+
+        $this->assertEquals(2,$comment->user->achievements()->count());
+
     }
 }
